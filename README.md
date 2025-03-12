@@ -17,6 +17,7 @@ Currently, the following options for sources and sinks are available:
 * [Values](#values) (`values://`)
 * [Text](#text) (CSV, TSV) (`text://`)
 * [Parquet](#parquet) (`parquet://`)
+* [Delta](#delta) (`delta://`)
 * [Excel](#excel) (`xlsx://`)
 * [Hive](#hive) (`hive://`)
 * [Kafka](#kafka) (`kafka://`)
@@ -82,6 +83,12 @@ text:///path/to/some.csv
 parquet:///path/to/parquet/directory
 ```
 [Reads/writes Parquet files](core/src/main/scala/dev/mauch/spark/dfio/ParquetDataFrameSource.scala) in a given directory.
+
+### Delta
+```
+delta:///path/to/parquet/directory
+```
+[Reads/writes Delta table directories](delta/src/main/scala/dev/mauch/spark/dfio/DeltaUriParser.scala) in a given directory.
 
 ### Excel
 ```

@@ -58,14 +58,13 @@ trait ConfluentRepo extends ScalaModule {
 }
 val scala213 = "2.13.16"
 val scala212 = "2.12.20"
-val spark24 = List("2.4.8")
 val spark30 = List("3.0.3")
 val spark31 = List("3.1.3")
 val spark32 = List("3.2.4")
 val spark33 = List("3.3.4")
 val spark34 = List("3.4.1", "3.4.4")
 val spark35 = List("3.5.5")
-val sparkVersions = spark24 ++ spark30 ++ spark31 ++ spark32 ++ spark33 ++ spark34 ++ spark35
+val sparkVersions = spark30 ++ spark31 ++ spark32 ++ spark33 ++ spark34 ++ spark35
 val crossMatrix212 = sparkVersions.map(spark => (scala212, spark))
 val crossMatrix213 = sparkVersions.filter(_ >= "3.2").map(spark => (scala213, spark))
 val crossMatrix = crossMatrix212 ++ crossMatrix213
@@ -93,6 +92,24 @@ trait HiveModule extends DfioModule with HwcModule {
   )
 }
 object hive extends Cross[HiveModule](crossMatrix212)
+
+trait DeltaModule extends DfioModule {
+  def moduleDeps = Seq(core())
+  val deltaVersion = sparkVersion match {
+    case v if v.startsWith("3.0") => "0.8.0"
+    case v if v.startsWith("3.1") => "1.0.0"
+    case v if v.startsWith("3.2") => "2.0.0"
+    case v if v.startsWith("3.3") => "2.3.0"
+    case v if v.startsWith("3.4") => "2.4.0"
+    case _ => "3.3.0"
+  }
+  val artifact = deltaVersion.split("\\.").head match {
+    case "0" | "1" | "2" => "delta-core"
+    case _ => "delta-spark"
+  }
+  def ivyDeps = Agg(ivy"io.delta::$artifact:$deltaVersion")
+}
+object delta extends Cross[DeltaModule](crossMatrix)
 
 trait ExcelModule extends DfioModule {
   def moduleDeps = Seq(core())
