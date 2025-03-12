@@ -56,7 +56,9 @@ object ETLOptions {
         DataFrameUrlParser.lift
           .apply(newUri)
           .map(f => wrap(name, f.andThen(_.asInstanceOf[T])))
-          .toRight(s"URI scheme '${uri.getScheme}' not in supported schemes: ${DataFrameUrlParser.schemes.map(t => s"'$t'").mkString(", ")}")
+          .toRight(
+            s"URI scheme '${uri.getScheme}' not in supported schemes: ${DataFrameUrlParser.schemes.map(t => s"'$t'").mkString(", ")}"
+          )
       case Failure(exception) =>
         Left(exception.getLocalizedMessage)
     }
@@ -100,14 +102,17 @@ import ETLOptions._
 
 object ETL {
   def main(args: Array[String]): Unit = {
-    val doc = s"ETL ${BuildInfo.version}, compiled with Scala ${BuildInfo.scalaVersion} for Spark ${BuildInfo.sparkVersion}"
+    val doc =
+      s"ETL ${BuildInfo.version}, compiled with Scala ${BuildInfo.scalaVersion} for Spark ${BuildInfo.sparkVersion}"
     val readme = BuildInfo.readme
-    println(readme)
     val options = ParserForClass[ETLOptions].constructOrThrow(args, customDoc = s"$doc\n")
-    println(s"Running $doc\nwith options: $options")
     val sparkBuilder = SparkSession.builder().appName(options.appName)
+    val sparkConfigs = DataFrameUrlParser.sparkConfigs
+    val configuredBuilder = sparkConfigs.foldLeft(sparkBuilder) { case (builder, (key, value)) =>
+      builder.config(key, value)
+    }
     val spark =
-      options.master.fold(sparkBuilder)(sparkBuilder.master).getOrCreate()
+      options.master.fold(configuredBuilder)(configuredBuilder.master).getOrCreate()
     println(s"Spark session instantiated, version: ${spark.version}")
     options.source.map { source => source.run(spark) }
     val transforms =

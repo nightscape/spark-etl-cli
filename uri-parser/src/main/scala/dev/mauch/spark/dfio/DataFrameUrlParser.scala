@@ -19,9 +19,12 @@ class DataFrameUrlParser(_spark: SparkSession) {
 
 }
 object DataFrameUrlParser extends DataFrameUriParser {
-   private def registry = java.util.ServiceLoader.load[DataFrameUriParser](classOf[DataFrameUriParser])
-   private val uriParsers = registry.iterator().asScala.toList
-   def schemes: Seq[String] = uriParsers.flatMap(_.schemes)
+  private def registry = java.util.ServiceLoader.load[DataFrameUriParser](classOf[DataFrameUriParser])
+  private val uriParsers = registry.iterator().asScala.toList
+
+  // TODO: It would be better to only gather the spark configs for the schemes that are actually used.
+  override def sparkConfigs: Map[String, String] = uriParsers.flatMap(_.sparkConfigs).toMap
+  def schemes: Seq[String] = uriParsers.flatMap(_.schemes)
 
   def apply(uri: URI): SparkSession => DataFrameSource with DataFrameSink = {
     println(s"""
