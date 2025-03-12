@@ -136,7 +136,7 @@ trait UriParserModule extends DfioModule with HwcModule with ConfluentRepo {
 }
 object `uri-parser` extends Cross[UriParserModule](crossMatrix)
 
-trait EtlModule extends DfioModule with HwcModule with ConfluentRepo with BuildInfo {
+trait EtlModule extends DfioModule with HwcModule with ConfluentRepo with BuildInfo { etlModule =>
   def mainClass = Some("dev.mauch.spark.dfio.ETL")
   // def finalMainClassOpt = Left[String, String]("none")
   def moduleDeps = Seq(core(), serde(), `uri-parser`())
@@ -161,5 +161,20 @@ trait EtlModule extends DfioModule with HwcModule with ConfluentRepo with BuildI
       BuildInfo.Value("readme", os.read(millSourcePath / os.up / "README.md"))
     )
   def resources = super.resources() ++ Seq(PathRef(millSourcePath / os.up / "README.md"))
+
+  object test extends SbtTests with TestModule.ZioTest {
+    def moduleDeps = super.moduleDeps ++ etlModule.moduleDeps ++ Seq(kafka(), delta())
+    def ivyDeps = Agg(
+      ivy"dev.zio::zio-test:2.1.14",
+      ivy"dev.zio::zio-test-sbt:2.1.14",
+      ivy"org.testcontainers:testcontainers:1.20.4",
+      ivy"com.dimafeng::testcontainers-scala-core:0.41.8",
+      ivy"com.dimafeng::testcontainers-scala-kafka:0.41.8",
+      ivy"com.github.sideeffffect::zio-testcontainers:0.6.0",
+      ivy"dev.zio::zio-kafka:2.6.0",
+      ivy"org.apache.kafka:kafka-clients:3.6.0",
+      ivy"org.apache.spark::spark-sql:$sparkVersion"
+    )
+  }
 }
 object etl extends Cross[EtlModule](crossMatrix)

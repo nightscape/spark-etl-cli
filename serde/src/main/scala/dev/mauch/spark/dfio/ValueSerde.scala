@@ -13,7 +13,7 @@ trait ValueSerde {
 object ValueSerde {
   def apply(serde: String, conf: Map[String, String], topic: String): ValueSerde =
     serde match {
-      case "json" => new JsonSerde(StructType.apply(Seq()))
+      case "json" => new JsonSerde(None)
       case "avro" =>
         conf match {
           case AvroSchemaRegistrySerde(serde) => serde
