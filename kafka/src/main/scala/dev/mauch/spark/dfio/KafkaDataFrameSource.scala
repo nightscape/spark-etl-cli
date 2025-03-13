@@ -11,6 +11,7 @@ case class KafkaDataFrameSource(
   broker: String,
   topic: String,
   serde: String = "json",
+  isStream: Boolean = false,
   additionalOptions: Map[String, String] = Map.empty
 ) extends DataFrameSource
     with DataFrameSink {
@@ -21,13 +22,23 @@ case class KafkaDataFrameSource(
     } ++ Map("schema.topic.name" -> topic),
     topic
   )
+
   override def read(): DataFrame = {
-    val df = spark.read
-      .format("kafka")
-      .option("kafka.bootstrap.servers", broker)
-      .option("subscribe", topic)
-      .options(additionalOptions)
-      .load()
+    val df = if (isStream) {
+      spark.readStream
+        .format("kafka")
+        .option("kafka.bootstrap.servers", broker)
+        .option("subscribe", topic)
+        .options(additionalOptions)
+        .load()
+    } else {
+      spark.read
+        .format("kafka")
+        .option("kafka.bootstrap.servers", broker)
+        .option("subscribe", topic)
+        .options(additionalOptions)
+        .load()
+    }
     serdeInstance.deserialize(df)
   }
 
