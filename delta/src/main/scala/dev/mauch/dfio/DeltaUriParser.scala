@@ -18,11 +18,24 @@ case class DeltaDataFrameSource(spark: SparkSession, path: String, options: Map[
   }
 
   override def write(df: DataFrame): Boolean = {
-    df.write
-      .mode(SaveMode.Overwrite)
-      .format("delta")
-      .options(options)
-      .save(path)
+    if (df.isStreaming) {
+      try {
+        // Create the delta table if it doesn't exist
+        df.limit(0).write.format("delta").options(options).save(path)
+      } catch {
+        case e: Exception => ()
+      }
+      df.writeStream
+        .format("delta")
+        .options(options)
+        .start(path)
+    } else {
+      df.write
+        .mode(SaveMode.Overwrite)
+        .format("delta")
+        .options(options)
+        .save(path)
+    }
     true
   }
 }

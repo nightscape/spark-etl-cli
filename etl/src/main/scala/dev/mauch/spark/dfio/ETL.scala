@@ -11,7 +11,7 @@ import UriHelpers._
 case class Transformation(inputName: String, outputName: String, transformation: DataFrame => DataFrame) {
   def run(spark: SparkSession): DataFrame = {
     val input = spark.table(inputName)
-    val output = transformation(input).cache
+    val output = transformation(input)
     output.createOrReplaceTempView(outputName)
     output
   }
@@ -19,7 +19,7 @@ case class Transformation(inputName: String, outputName: String, transformation:
 
 case class Source(sourceName: String, reader: SparkSession => DataFrameSource) {
   def run(spark: SparkSession): DataFrame = {
-    val df = reader(spark).read().cache
+    val df = reader(spark).read()
     df.createOrReplaceTempView(sourceName)
     df
   }
