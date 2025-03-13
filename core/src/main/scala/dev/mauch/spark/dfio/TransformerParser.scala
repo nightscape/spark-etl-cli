@@ -1,5 +1,6 @@
 package dev.mauch.spark.dfio
 
+import java.net.URLDecoder
 import org.apache.spark.sql.DataFrame
 
 trait TransformerParser {
@@ -12,7 +13,7 @@ object TransformerParser extends TransformerParser {
       case "sql" =>
         Some { df =>
           df.createOrReplaceTempView("input")
-          df.sqlContext.sql(uri.getPath.substring(1))
+          df.sqlContext.sql(URLDecoder.decode(uri.getPath.substring(1), "UTF-8"))
         }
       case "sql-file" =>
         Some { df =>
