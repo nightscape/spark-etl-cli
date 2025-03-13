@@ -39,3 +39,16 @@ object AvroSchemaSerde {
     }
   }
 }
+
+object AvroSerdeConstructor extends ValueSerde.Constructor {
+  override def apply(serde: String, conf: Map[String, String]): Option[ValueSerde] = {
+    val schema = conf.get("schema")
+    if (serde == "avro" && schema.isDefined) {
+      conf match {
+        case AvroSchemaRegistrySerde(serde) => Some(serde)
+        case AvroSchemaSerde(serde) => Some(serde)
+        case _ => None
+      }
+    } else None
+  }
+}
