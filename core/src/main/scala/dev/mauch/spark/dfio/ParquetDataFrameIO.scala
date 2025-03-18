@@ -21,11 +21,7 @@ case class ParquetDataFrameIO(spark: SparkSession, path: String) extends DataFra
 
 class ParquetUriParser extends DataFrameUriParser {
   def schemes: Seq[String] = Seq("parquet")
-  override def apply(uri: java.net.URI): SparkSession => DataFrameSource with DataFrameSink = {
-    spark =>
-        new ParquetDataFrameIO(
-          spark,
-          uri.getPath
-        )
-    }
+  override def apply(uri: java.net.URI): SparkSession => DataFrameSource with DataFrameSink = { spark =>
+    new ParquetDataFrameIO(spark, uri.getPath)
+  }
 }

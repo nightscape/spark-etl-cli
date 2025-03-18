@@ -3,7 +3,7 @@ package dev.mauch.spark.dfio
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.time.Instant
-import org.apache.solr.client.solrj.impl.{HttpClientUtil, Krb5HttpClientBuilder, CloudSolrClient}
+import org.apache.solr.client.solrj.impl.{CloudSolrClient, HttpClientUtil, Krb5HttpClientBuilder}
 import org.apache.solr.client.solrj.request.UpdateRequest
 import org.apache.solr.common.SolrInputDocument
 

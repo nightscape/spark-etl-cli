@@ -28,18 +28,17 @@ case class TextFileDataFrameSource(spark: SparkSession, path: String, delimiter:
 
 class TextFileUriParser extends DataFrameUriParser {
   def schemes: Seq[String] = Seq("text")
-  override def apply(uri: java.net.URI): SparkSession => DataFrameSource with DataFrameSink = {
-    spark =>
-      val delimiter = uri.pathParts.last.split("\\.").lastOption match {
-          case Some("csv") => ","
-          case Some("tsv") => "\t"
-          case _ => ","
-        }
-        new TextFileDataFrameSource(
-          spark,
-          uri.getPath,
-          delimiter = delimiter,
-          header = uri.queryParams.getOrElse("header", "true").toBoolean
-        )
+  override def apply(uri: java.net.URI): SparkSession => DataFrameSource with DataFrameSink = { spark =>
+    val delimiter = uri.pathParts.last.split("\\.").lastOption match {
+      case Some("csv") => ","
+      case Some("tsv") => "\t"
+      case _ => ","
     }
+    new TextFileDataFrameSource(
+      spark,
+      uri.getPath,
+      delimiter = delimiter,
+      header = uri.queryParams.getOrElse("header", "true").toBoolean
+    )
+  }
 }

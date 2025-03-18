@@ -41,16 +41,35 @@ case class ValuesSource(spark: SparkSession, header: Seq[String], values: Seq[Se
 
 class ValuesUriParser extends DataFrameUriParser {
   def schemes: Seq[String] = Seq("values")
-  override def apply(uri: java.net.URI): SparkSession => DataFrameSource with DataFrameSink = {
-    spark =>
-        new ValuesSource(
-          spark,
-          header = uri.queryParams.getOrElse("header", "").split(",").toSeq,
-          values = uri.queryParams
-            .getOrElse("values", "")
-            .split(";")
-            .map(_.split(",").toSeq)
-            .toSeq
-        )
-    }
+  override def apply(uri: java.net.URI): SparkSession => DataFrameSource with DataFrameSink = { spark =>
+    val headerStr = uri.queryParams.getOrElse("header", "")
+    val parsedHeader: Seq[(String, DataType)] = headerStr
+      .split(",")
+      .filter(_.nonEmpty)
+      .map { field =>
+        val parts = field.split(":")
+        if (parts.length == 2)
+          (
+            parts(0),
+            parts(1).trim.toLowerCase match {
+              case "int" => IntegerType
+              case "double" => DoubleType
+              case "long" => LongType
+              case _ => StringType
+            }
+          )
+        else (field, StringType)
+      }
+      .toSeq
+
+    new ValuesSource(
+      spark,
+      header = parsedHeader,
+      values = uri.queryParams
+        .getOrElse("values", "")
+        .split(";")
+        .map(_.split(",").toSeq)
+        .toSeq
+    )
+  }
 }

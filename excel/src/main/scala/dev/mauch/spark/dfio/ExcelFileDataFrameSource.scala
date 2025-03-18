@@ -32,12 +32,7 @@ case class ExcelFileDataFrameSource(spark: SparkSession, path: String, options: 
 
 class ExcelUriParser extends DataFrameUriParser {
   def schemes: Seq[String] = Seq("excel")
-  override def apply(uri: java.net.URI): SparkSession => DataFrameSource with DataFrameSink = {
-    spark =>
-      new ExcelFileDataFrameSource(
-        spark,
-        uri.getPath,
-        options = uri.queryParams
-      )
+  override def apply(uri: java.net.URI): SparkSession => DataFrameSource with DataFrameSink = { spark =>
+    new ExcelFileDataFrameSource(spark, uri.getPath, options = uri.queryParams)
   }
 }
