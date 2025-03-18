@@ -8,12 +8,8 @@ import java.time.{Instant, ZoneId, ZoneOffset}
 import java.net.URI
 import UriHelpers._
 
-case class HiveDataFrameSource(
-  spark: SparkSession,
-  dbName: String,
-  tableName: String,
-  partitionCols: Seq[String]
-) extends DataFrameSource
+case class HiveDataFrameSource(spark: SparkSession, dbName: String, tableName: String, partitionCols: Seq[String])
+    extends DataFrameSource
     with DataFrameSink {
   private val hive = HiveWarehouseSession.session(spark).build()
   override def read(): DataFrame = {
@@ -44,14 +40,14 @@ case class HiveDataFrameSource(
 object HiveUriParser extends DataFrameUriParser {
   def schemes: Seq[String] = Seq("hive")
   def apply(uri: URI): SparkSession => DataFrameSource with DataFrameSink =
-        spark =>
-          HiveDataFrameSource(
-            spark,
-            dbName = uri.pathParts(0),
-            tableName = uri.pathParts(1),
-            partitionCols = uri.queryParams
-              .getOrElse("partitionCols", "")
-              .split(",")
-              .filter(_.nonEmpty),
-          )
+    spark =>
+      HiveDataFrameSource(
+        spark,
+        dbName = uri.pathParts(0),
+        tableName = uri.pathParts(1),
+        partitionCols = uri.queryParams
+          .getOrElse("partitionCols", "")
+          .split(",")
+          .filter(_.nonEmpty)
+      )
 }
