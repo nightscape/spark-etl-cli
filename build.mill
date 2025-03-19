@@ -133,6 +133,12 @@ trait SolrModule extends DfioModule {
 }
 object solr extends Cross[SolrModule](crossMatrix)
 
+trait DiffModule extends DfioModule {
+  def moduleDeps = Seq(core())
+  def ivyDeps = Agg(ivy"uk.co.gresearch.spark::spark-extension:2.13.0-${sparkBinaryVersion}")
+}
+object diff extends Cross[DiffModule](crossMatrix)
+
 trait UriParserModule extends DfioModule with HwcModule with ConfluentRepo {
   def moduleDeps = Seq(core(), serde())
   def ivyDeps = Agg(ivy"org.scala-lang.modules::scala-collection-compat:2.13.0")
@@ -167,7 +173,7 @@ trait EtlModule extends DfioModule with HwcModule with ConfluentRepo with BuildI
   def resources = super.resources() ++ Seq(PathRef(millSourcePath / os.up / "README.md"))
 
   object test extends SbtTests with TestModule.ZioTest {
-    def moduleDeps = super.moduleDeps ++ etlModule.moduleDeps ++ Seq(kafka(), delta(), avro())
+    def moduleDeps = super.moduleDeps ++ etlModule.moduleDeps ++ Seq(kafka(), delta(), avro(), diff())
     def ivyDeps = Agg(
       ivy"dev.zio::zio-test:2.1.16",
       ivy"dev.zio::zio-test-sbt:2.1.16",
