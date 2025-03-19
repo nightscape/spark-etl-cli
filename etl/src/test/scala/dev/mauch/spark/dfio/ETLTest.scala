@@ -136,7 +136,7 @@ object ETLTest extends ZIOSpecDefault {
         producer <- Producer.make(producerSettings(bootstrapServers))
         _ <- ZIO.attempt {
           val bossRelationsDF = spark.createDataFrame(bossRelations.take(0))
-          bossRelationsDF.write.format("delta").mode("overwrite").save(s"$testDeltaPath/bossRelations")
+          bossRelationsDF.write.format("avro").mode("overwrite").save(s"$testDeltaPath/bossRelations")
         }
         sql = """
           SELECT
@@ -170,7 +170,7 @@ object ETLTest extends ZIOSpecDefault {
                 "PLAINTEXT://",
                 ""
               )}/$topic?serde=json:$schemaURL&startingOffsets=earliest
-            --source bossRelations+delta://${testDeltaPath}/bossRelations
+            --source bossRelations+avro://${testDeltaPath}/bossRelations
             --transform employees+employeesWithBosses+sql:///${URLEncoder.encode(sql.replaceAll("\\s+", " "), "UTF-8")}
             --sink employeesWithBosses+delta://$testDeltaPath/employeesWithBosses?checkpointLocation=$testDeltaPath/checkpoint&trigger-interval=100+milliseconds
           """.split("\\s+").filter(_.nonEmpty)
