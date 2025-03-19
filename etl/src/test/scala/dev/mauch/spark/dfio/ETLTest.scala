@@ -106,8 +106,12 @@ object ETLTest extends ZIOSpecDefault {
           val args = s"""
             --master local[*]
             --source kafka://${bootstrapServers.replaceFirst("PLAINTEXT://", "")}/$topic?serde=json
-            --sink console://foo
-            --sink delta://$testDeltaPath
+            --source expected+values:///?header=id:long,name:string,age:long&values=${exampleData
+              .map(person => s"${person.id},${person.name},${person.age}")
+              .mkString(";")}
+            --transform source+diffResult+diff:///expected?id=id&handleDifferences=filter
+            --sink diffResult+console://foo
+            --sink diffResult+delta://$testDeltaPath
           """.split("\\s+").filter(_.nonEmpty)
           println(args.mkString(" "))
           ETL.main(args)
@@ -119,9 +123,7 @@ object ETLTest extends ZIOSpecDefault {
         }
 
       } yield {
-        assert(result.length)(equalTo(exampleData.length)) &&
-        assert(result.map(_.getAs[Long]("id")).toSet)(equalTo(exampleData.map(_.id).toSet)) &&
-        assert(result.map(_.getAs[String]("name")).toSet)(equalTo(exampleData.map(_.name).toSet))
+        assert(result)(equalTo(Array.empty[Row]))
       }
     } @@ TestAspect.timeout(60.seconds),
     test("should run streaming ETL from Kafka to Delta") {
