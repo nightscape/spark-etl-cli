@@ -88,10 +88,9 @@ object ETLOptions {
         }
         val newUri =
           new URI(scheme, uri.getUserInfo, uri.getHost, uri.getPort, uri.getPath, uri.getQuery, uri.getFragment)
-        TransformerParser
-          .unapply(newUri)
-          .map(Transformation(source, sink, _))
-          .toRight(s"URI scheme ${uri.getScheme} in URI '$uri'")
+        val transformer = TransformerUrlParser.apply(newUri)
+        val transformation = Transformation(source, sink, transformer)
+        Right(transformation)
       case Failure(exception) =>
         Left(s"Invalid URI ${strs}:\n${exception.getLocalizedMessage}")
     }
