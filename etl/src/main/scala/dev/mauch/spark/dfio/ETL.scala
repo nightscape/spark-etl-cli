@@ -105,6 +105,9 @@ object ETL {
       s"ETL ${BuildInfo.version}, compiled with Scala ${BuildInfo.scalaVersion} for Spark ${BuildInfo.sparkVersion}"
     val readme = BuildInfo.readme
     val options = ParserForClass[ETLOptions].constructOrThrow(args, customDoc = s"$doc\n")
+    run(options)
+  }
+  def run(options: ETLOptions): Unit = {
     val sparkBuilder = SparkSession.builder().appName(options.appName)
     val sparkConfigs = DataFrameUrlParser.sparkConfigs
     val configuredBuilder = sparkConfigs.foldLeft(sparkBuilder) { case (builder, (key, value)) =>
