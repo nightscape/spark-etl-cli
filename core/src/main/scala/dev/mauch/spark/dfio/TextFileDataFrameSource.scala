@@ -7,12 +7,10 @@ import java.time.Instant
 import UriHelpers._
 
 case class TextFileDataFrameSource(spark: SparkSession, path: String, delimiter: String = ",", header: Boolean = true)
-    extends DataFrameSource
+    extends DefaultDataFrameSource
     with DataFrameSink {
-
-  override def read(): DataFrame = {
-    spark.read.option("header", header).option("delimiter", delimiter).csv(path)
-  }
+  override def format: String = "csv"
+  override def options: Map[String, String] = Map("header" -> header.toString, "delimiter" -> delimiter)
 
   override def write(df: DataFrame): Boolean = {
     df.select(DataFrameUtils.flattenSchema(df.schema): _*)
