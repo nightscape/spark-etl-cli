@@ -1,2 +1,4 @@
 dev.mauch.spark.dfio.IdentityTransformerParser
+dev.mauch.spark.dfio.FlattenTransformerParser
+dev.mauch.spark.dfio.FlattenAndExplodeTransformerParser
 dev.mauch.spark.dfio.SqlTransformerParser
