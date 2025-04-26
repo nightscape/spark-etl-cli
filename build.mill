@@ -73,7 +73,7 @@ trait SerdeModule extends DfioModule with ConfluentRepo {
   def moduleDeps = Seq(core())
   def ivyDeps = Agg(
     ivy"org.scala-lang.modules::scala-xml:2.3.0",
-    ivy"com.fasterxml.jackson.module::jackson-module-scala:2.18.3",
+    ivy"com.fasterxml.jackson.module::jackson-module-scala:2.19.0",
     ivy"za.co.absa::abris:6.4.1"
   )
 }
