@@ -15,8 +15,7 @@ class AvroFileDataFrameSource(
     with DataFrameSink {
 
   override def write(df: DataFrame): Boolean = {
-    df
-      .write
+    df.write
       .mode(SaveMode.Overwrite)
       .format("avro")
       .options(options)
