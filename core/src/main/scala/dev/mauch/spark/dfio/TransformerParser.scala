@@ -6,7 +6,7 @@ import org.apache.spark.sql.Column
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.sql.functions.{col, explode}
-import org.apache.spark.sql.types.{StructField, StructType, ArrayType}
+import org.apache.spark.sql.types.{ArrayType, StructField, StructType}
 
 trait TransformerParser extends PartialFunction[java.net.URI, DataFrame => DataFrame] {
   def sparkConfigs: Map[String, String] = Map.empty
@@ -72,14 +72,15 @@ class FlattenAndExplodeTransformerParser extends TransformerParser {
     }
   }
 
-  /**
-   * Recursively processes a DataFrame by finding the first struct to flatten or array to explode,
-   * applying the transformation, and calling itself on the result.
-   */
+  /** Recursively processes a DataFrame by finding the first struct to flatten or array to explode, applying the
+    * transformation, and calling itself on the result.
+    */
   @scala.annotation.tailrec
   private def processDataFrame(df: DataFrame): DataFrame = {
     // Find the first field that needs transformation (struct or array)
-    df.schema.fields.find(field => field.dataType.isInstanceOf[StructType] || field.dataType.isInstanceOf[ArrayType]) match {
+    df.schema.fields.find(field =>
+      field.dataType.isInstanceOf[StructType] || field.dataType.isInstanceOf[ArrayType]
+    ) match {
       case Some(fieldToTransform) =>
         // Apply the transformation based on the field type
         val transformedDf = fieldToTransform.dataType match {
@@ -105,15 +106,21 @@ class FlattenAndExplodeTransformerParser extends TransformerParser {
                     // Adjust the alias to remove the temporary name prefix and use the original field name
                     val parts = expr.split(" as ", 2) // Split only on the first " as "
                     val selector = parts(0) // e.g., "`__exploded_fieldName`.`structField`"
-                    val aliasWithTempPrefix = parts(1).stripPrefix("`").stripSuffix("`") // e.g., "__exploded_fieldName_structField"
+                    val aliasWithTempPrefix =
+                      parts(1).stripPrefix("`").stripSuffix("`") // e.g., "__exploded_fieldName_structField"
                     // Replace the temp prefix in the alias with the original array field name prefix
-                    val finalAlias = aliasWithTempPrefix.replaceFirst(java.util.regex.Pattern.quote(tempExplodedColName + "_"), fieldName + "_")
+                    val finalAlias = aliasWithTempPrefix.replaceFirst(
+                      java.util.regex.Pattern.quote(tempExplodedColName + "_"),
+                      fieldName + "_"
+                    )
                     s"$selector as `$finalAlias`" // e.g., "`__exploded_fieldName`.`structField` as `fieldName_structField`"
                   }
 
                 // Apply explode and then select the original columns + the newly flattened struct fields
                 df.withColumn(tempExplodedColName, explode(col(s"`$fieldName`"))) // Explode array into temp col
-                  .selectExpr(originalColsBeforeExplode ++ flattenedExprsFromExploded: _*) // Select original cols + new flattened cols
+                  .selectExpr(
+                    originalColsBeforeExplode ++ flattenedExprsFromExploded: _*
+                  ) // Select original cols + new flattened cols
 
               case _ =>
                 // Array of Primitives/Arrays: Explode and rename back
