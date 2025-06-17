@@ -10,8 +10,12 @@ import org.apache.spark.sql.streaming.DataStreamWriter
 import org.apache.spark.sql.Row
 import java.net.URLDecoder
 
-class DeltaDataFrameSource(spark: SparkSession, path: String, options: Map[String, String] = Map.empty, isStream: Boolean)
-    extends StreamingDataFrameSource(spark, "delta", path, options, isStream = isStream)
+class DeltaDataFrameSource(
+  spark: SparkSession,
+  path: String,
+  options: Map[String, String] = Map.empty,
+  isStream: Boolean
+) extends StreamingDataFrameSource(spark, "delta", path, options, isStream = isStream)
     with DataFrameSink {
 
   def applyTriggerInterval(df: DataStreamWriter[Row]): DataStreamWriter[Row] = {
