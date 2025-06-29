@@ -38,7 +38,7 @@ object ETLTest extends ZIOSpecDefault {
     Person(2, "Bob", 25),
     Person(3, "Charlie", 35),
     Person(4, "Dave", 40),
-    Person(5, "Eve", 22),
+    Person(5, "Eve", 22)
   )
   case class BossRelation(employeeId: Long, bossId: Option[Long], bossSince: Option[Instant] = None)
   val now = Instant.now()
@@ -62,7 +62,7 @@ object ETLTest extends ZIOSpecDefault {
   println(s"bossRelations: ${bossRelations.mkString("\n")}")
   val tempDirLayer: ZLayer[Scope, Throwable, Path] = ZLayer {
     ZIO.acquireRelease(ZIO.attempt(Files.createTempDirectory("dataframe-io-test")))(dir =>
-      //ZIO.attempt(deleteRecursively(dir)).ignoreLogged
+      // ZIO.attempt(deleteRecursively(dir)).ignoreLogged
       ZIO.unit
     )
   }
@@ -190,14 +190,17 @@ object ETLTest extends ZIOSpecDefault {
         batch2 = employees.drop(2)
 
         // Send and check first batch
-        _ <- ZStream.fromIterable(batch1)
+        _ <- ZStream
+          .fromIterable(batch1)
           .mapZIO { employee =>
             for {
               _ <- ZIO.attempt {
                 val bossRelationsDF = spark.createDataFrame(bossRelations.filter(_.employeeId == employee.id))
                 bossRelationsDF.write.format("avro").mode("append").save(s"$testDeltaPath/bossRelations")
               }
-              json = s"""{"id": ${employee.id}, "name": "${employee.name}"${employee.employeeSince.map(since => s", \"employeeSince\": \"${since}\"").getOrElse("")}}"""
+              json = s"""{"id": ${employee.id}, "name": "${employee.name}"${employee.employeeSince
+                  .map(since => s", \"employeeSince\": \"${since}\"")
+                  .getOrElse("")}}"""
               _ <- producer.produce(new ProducerRecord(topic, "key1", json), Serde.string, Serde.string)
             } yield ()
           }
@@ -211,14 +214,17 @@ object ETLTest extends ZIOSpecDefault {
           .retry(Schedule.spaced(500.millis) && Schedule.recurs(20))
 
         // Send remaining data
-        _ <- ZStream.fromIterable(batch2)
+        _ <- ZStream
+          .fromIterable(batch2)
           .mapZIO { employee =>
             for {
               _ <- ZIO.attempt {
                 val bossRelationsDF = spark.createDataFrame(bossRelations.filter(_.employeeId == employee.id))
                 bossRelationsDF.write.format("avro").mode("append").save(s"$testDeltaPath/bossRelations")
               }
-              json = s"""{"id": ${employee.id}, "name": "${employee.name}"${employee.employeeSince.map(since => s", \"employeeSince\": \"${since}\"").getOrElse("")}}"""
+              json = s"""{"id": ${employee.id}, "name": "${employee.name}"${employee.employeeSince
+                  .map(since => s", \"employeeSince\": \"${since}\"")
+                  .getOrElse("")}}"""
               _ <- producer.produce(new ProducerRecord(topic, "key1", json), Serde.string, Serde.string)
             } yield ()
           }
@@ -243,17 +249,22 @@ object ETLTest extends ZIOSpecDefault {
 
         // Verify time-based join behavior
         _ <- ZIO.attempt {
-          val result = spark.sql(s"""
+          val result = spark
+            .sql(s"""
             SELECT COUNT(*)
             FROM delta.`$testDeltaPath/employeesWithBosses`
             WHERE bossId IS NULL
-          """).head().getLong(0)
+          """)
+            .head()
+            .getLong(0)
           assert(result)(equalTo(1L)) // Expect 1 employee without a boss (the last one)
         }
 
-        _ <- ZIO.attempt {
-          spark.sql(s"DESCRIBE HISTORY delta.`$testDeltaPath/employeesWithBosses`").show(false)
-        }.debug("Delta Table History")
+        _ <- ZIO
+          .attempt {
+            spark.sql(s"DESCRIBE HISTORY delta.`$testDeltaPath/employeesWithBosses`").show(false)
+          }
+          .debug("Delta Table History")
 
         _ <- etlFiber.interrupt
       } yield {
