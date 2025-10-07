@@ -56,7 +56,7 @@ trait ConfluentRepo extends ScalaModule {
     super.repositoriesTask() ++ Seq(MavenRepository("https://packages.confluent.io/maven/"))
   }
 }
-val scala213 = "2.13.16"
+val scala213 = "2.13.17"
 val scala212 = "2.12.20"
 val spark32 = List("3.2.4")
 val spark33 = List("3.3.4")
