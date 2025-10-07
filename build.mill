@@ -141,7 +141,7 @@ object diff extends Cross[DiffModule](crossMatrix)
 
 trait UriParserModule extends DfioModule with HwcModule with ConfluentRepo {
   def moduleDeps = Seq(core(), serde())
-  def ivyDeps = Agg(ivy"org.scala-lang.modules::scala-collection-compat:2.13.0")
+  def ivyDeps = Agg(ivy"org.scala-lang.modules::scala-collection-compat:2.14.0")
   def scalacOptions = Seq("-Xexperimental")
 }
 object `uri-parser` extends Cross[UriParserModule](crossMatrix)
