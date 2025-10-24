@@ -150,7 +150,7 @@ trait EtlModule extends DfioModule with HwcModule with ConfluentRepo with BuildI
   def mainClass = Some("dev.mauch.spark.dfio.ETL")
   // def finalMainClassOpt = Left[String, String]("none")
   def moduleDeps = Seq(core(), serde(), `uri-parser`())
-  def ivyDeps = Agg(ivy"org.apache.spark::spark-sql:$sparkVersion", ivy"com.lihaoyi::mainargs:0.7.6").map(
+  def ivyDeps = Agg(ivy"org.apache.spark::spark-sql:$sparkVersion", ivy"com.lihaoyi::mainargs:0.7.7").map(
     _.excludeOrg("androidx.annotation")
   )
   def assemblyRules = super.assemblyRules ++ Seq(
