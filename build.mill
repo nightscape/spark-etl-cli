@@ -129,7 +129,7 @@ object kafka extends Cross[KafkaModule](crossMatrix)
 
 trait SolrModule extends DfioModule {
   def moduleDeps = Seq(core())
-  def ivyDeps = Agg(ivy"org.apache.solr:solr-solrj:9.9.0", ivy"commons-codec:commons-codec:1.20.0")
+  def ivyDeps = Agg(ivy"org.apache.solr:solr-solrj:9.10.0", ivy"commons-codec:commons-codec:1.20.0")
 }
 object solr extends Cross[SolrModule](crossMatrix)
 
