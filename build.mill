@@ -180,7 +180,7 @@ trait EtlModule extends DfioModule with HwcModule with ConfluentRepo with BuildI
       ivy"org.testcontainers:testcontainers:2.0.2",
       ivy"com.dimafeng::testcontainers-scala-core:0.43.6",
       ivy"com.dimafeng::testcontainers-scala-kafka:0.43.6",
-      ivy"com.github.sideeffffect::zio-testcontainers:0.6.0",
+      ivy"com.github.sideeffffect::zio-testcontainers:0.8.0",
       ivy"dev.zio::zio-kafka:2.6.0",
       ivy"org.apache.kafka:kafka-clients:3.9.1",
       ivy"org.apache.spark::spark-sql:$sparkVersion"
