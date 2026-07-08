@@ -121,6 +121,12 @@ trait ExcelModule extends DfioModule {
 }
 object excel extends Cross[ExcelModule](crossMatrix)
 
+trait XmlModule extends DfioModule {
+  def moduleDeps = Seq(core())
+  def ivyDeps = Agg(ivy"com.databricks::spark-xml:0.18.0")
+}
+object xml extends Cross[XmlModule](crossMatrix)
+
 trait KafkaModule extends DfioModule with ConfluentRepo {
   def moduleDeps = Seq(core(), serde())
   def ivyDeps = Agg(ivy"org.apache.spark::spark-sql-kafka-0-10:$sparkVersion")
@@ -173,7 +179,7 @@ trait EtlModule extends DfioModule with HwcModule with ConfluentRepo with BuildI
   def resources = super.resources() ++ Seq(PathRef(millSourcePath / os.up / "README.md"))
 
   object test extends SbtTests with TestModule.ZioTest {
-    def moduleDeps = super.moduleDeps ++ etlModule.moduleDeps ++ Seq(kafka(), delta(), avro(), diff())
+    def moduleDeps = super.moduleDeps ++ etlModule.moduleDeps ++ Seq(kafka(), delta(), avro(), diff(), xml())
     def ivyDeps = Agg(
       ivy"dev.zio::zio-test:2.1.24",
       ivy"dev.zio::zio-test-sbt:2.1.24",

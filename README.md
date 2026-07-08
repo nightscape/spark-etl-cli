@@ -19,6 +19,7 @@ Currently, the following options for sources and sinks are available:
 * [Parquet](#parquet) (`parquet://`)
 * [Delta](#delta) (`delta://`)
 * [Excel](#excel) (`xlsx://`)
+* [XML](#xml) (`xml://`)
 * [Hive](#hive) (`hive://`)
 * [Kafka](#kafka) (`kafka://`)
 * [Solr](#solr) (`solr://`)
@@ -95,6 +96,30 @@ delta:///path/to/parquet/directory
 xlsx:///path/to/some.xlsl
 ```
 [Reads/writes given Excel file](excel/src/main/scala/dev/mauch/spark/dfio/ExcelFileDataFrameSource.scala).
+
+### XML
+```
+xml:///path/to/data.xml?rowTag=book
+```
+[Reads/writes XML files](xml/src/main/scala/dev/mauch/spark/dfio/XmlFileDataFrameSource.scala) via
+[spark-xml](https://github.com/databricks/spark-xml).
+
+**Reading**: `rowTag` selects the element that becomes one row (default `ROW`). Any other query
+parameter is passed straight through as a spark-xml read option (e.g. `mode`, `charset`,
+`attributePrefix`).
+
+An XSD can be supplied to define the schema and validate the input:
+```
+xml:///path/to/data.xml?rowTag=book&xsd=/path/to/schema.xsd
+```
+When `xsd` is given, the read schema is derived from the XSD (typed columns instead of spark-xml's
+inference) and every row is validated against it. Combine with `mode=DROPMALFORMED` to drop rows
+that fail validation, or the default `mode=PERMISSIVE` to route them to the corrupt-record column.
+The XSD's root element must describe a single row (i.e. the `rowTag` element).
+
+**Writing**: rows are written as `<ROWS><ROW>…</ROW></ROWS>`. Note that spark-xml (0.18.0) does not
+apply write options, so `rowTag`/`rootTag` cannot currently customize the written element names.
+The `xsd` parameter applies to reading only.
 
 ### Hive
 ```
