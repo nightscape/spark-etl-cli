@@ -44,19 +44,24 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download Java (temurin@11)
-        id: download-java-temurin-11
+      # Spark 4.x requires Java 17+; Spark 3.x builds/tests on Java 11.
+      - name: Select JDK version
+        id: jdk
+        run: echo "version=${{ startsWith(matrix.spark, '4') && '17' || '11' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Download Java (temurin@${{ steps.jdk.outputs.version }})
+        id: download-java
         uses: typelevel/download-java@v2
         with:
           distribution: temurin
-          java-version: 11
+          java-version: ${{ steps.jdk.outputs.version }}
 
-      - name: Setup Java (temurin@11)
+      - name: Setup Java (temurin@${{ steps.jdk.outputs.version }})
         uses: actions/setup-java@v5
         with:
           distribution: jdkfile
-          java-version: 11
-          jdkFile: ${{ steps.download-java-temurin-11.outputs.jdkFile }}
+          java-version: ${{ steps.jdk.outputs.version }}
+          jdkFile: ${{ steps.download-java.outputs.jdkFile }}
 
       - name: Cache mill
         uses: actions/cache@v5
