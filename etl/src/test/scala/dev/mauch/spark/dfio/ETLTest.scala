@@ -164,8 +164,8 @@ object ETLTest extends ZIOSpecDefault {
           .attempt {
             val schema = org.apache.spark.sql.Encoders.product[Employee].schema
             val schemaURL = java.net.URLEncoder.encode(schema.json, "UTF-8")
-            val bossRelationsSchema = org.apache.spark.sql.Encoders[BossRelation].schema
-            val $bossRelationsSchemaURL = java.net.URLEncoder.encode(bossRelationsSchema.json, "UTF-8")
+            val bossRelationsSchema = org.apache.spark.sql.Encoders.product[BossRelation].schema
+            val bossRelationsSchemaURL = java.net.URLEncoder.encode(bossRelationsSchema.json, "UTF-8")
             val args = s"""
             --master local[*]
             --source employees+kafka-stream://${bootstrapServers.replaceFirst(
