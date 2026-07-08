@@ -27,7 +27,7 @@ class SqlTransformerParser extends TransformerParser {
       case "sql-file" => scala.io.Source.fromFile(uri.getPath.substring(1)).mkString
     }
     df.createOrReplaceTempView("input")
-    df.sqlContext.sql(sql)
+    df.sparkSession.sql(sql)
   }
 }
 
