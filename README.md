@@ -99,27 +99,30 @@ xlsx:///path/to/some.xlsl
 
 ### XML
 ```
-xml:///path/to/data.xml?rowTag=book
+xml:///path/to/data.xml?rowTag=book&rootTag=catalog
 ```
-[Reads/writes XML files](xml/src/main/scala/dev/mauch/spark/dfio/XmlFileDataFrameSource.scala) via
-[spark-xml](https://github.com/databricks/spark-xml).
+[Reads/writes XML files](xml/src/main/scala/dev/mauch/spark/dfio/XmlFileDataFrameSource.scala). The
+underlying implementation depends on the Spark version: **Spark 4.0+** uses Spark's built-in XML
+datasource, **Spark 3.x** uses the [spark-xml](https://github.com/databricks/spark-xml) library.
+Both register under the `xml` short name, so the same URIs work on either.
 
-**Reading**: `rowTag` selects the element that becomes one row (default `ROW`). Any other query
-parameter is passed straight through as a spark-xml read option (e.g. `mode`, `charset`,
-`attributePrefix`).
+`rowTag` selects the element that becomes one row and `rootTag` the wrapping element written around
+them; both default to `ROW`/`ROWS`. Any other query parameter is passed straight through as an
+option (e.g. `mode`, `charset`, `attributePrefix`).
 
-An XSD can be supplied to define the schema and validate the input:
+An XSD can be supplied to define the read schema and validate the input:
 ```
 xml:///path/to/data.xml?rowTag=book&xsd=/path/to/schema.xsd
 ```
-When `xsd` is given, the read schema is derived from the XSD (typed columns instead of spark-xml's
-inference) and every row is validated against it. Combine with `mode=DROPMALFORMED` to drop rows
-that fail validation, or the default `mode=PERMISSIVE` to route them to the corrupt-record column.
-The XSD's root element must describe a single row (i.e. the `rowTag` element).
+When `xsd` is given, the read schema is derived from the XSD (typed columns instead of inference)
+and every row is validated against it. Combine with `mode=DROPMALFORMED` to drop rows that fail
+validation, or the default `mode=PERMISSIVE` to route them to the corrupt-record column. The XSD's
+root element must describe a single row (i.e. the `rowTag` element). The `xsd` parameter applies to
+reading only.
 
-**Writing**: rows are written as `<ROWS><ROW>…</ROW></ROWS>`. Note that spark-xml (0.18.0) does not
-apply write options, so `rowTag`/`rootTag` cannot currently customize the written element names.
-The `xsd` parameter applies to reading only.
+**Write note:** on **Spark 4.0+** `rowTag`/`rootTag` are honored when writing (the built-in
+datasource is a proper file format). On **Spark 3.x** the spark-xml library ignores write options, so
+the sink always emits the default `<ROWS>/<ROW>` element names regardless of `rowTag`/`rootTag`.
 
 ### Hive
 ```

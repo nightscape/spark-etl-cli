@@ -2,9 +2,6 @@ package dev.mauch.spark.dfio
 
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.apache.spark.sql.types.{StructField, StructType}
-import com.databricks.spark.xml.util.XSDToSchema
-
-import java.nio.file.Paths
 
 import UriHelpers._
 
@@ -13,9 +10,12 @@ case class XmlFileDataFrameSource(spark: SparkSession, path: String, options: Ma
     with DataFrameSink {
 
   private val xsdPath: Option[String] = options.get("xsd")
-  // xsd drives per-row validation on read; every other query param passes straight to spark-xml
+  // Default the element names to spark-xml's historical defaults. Spark 4's native XML *requires*
+  // rowTag, so this keeps the scheme usable without one and consistent across Spark versions.
+  private val taggedOptions: Map[String, String] = Map("rowTag" -> "ROW", "rootTag" -> "ROWS") ++ (options - "xsd")
+  // xsd drives per-row validation on read; every other query param passes straight to the XML datasource
   private val readOptions: Map[String, String] =
-    (options - "xsd") ++ xsdPath.map("rowValidationXSDPath" -> _)
+    taggedOptions ++ xsdPath.map("rowValidationXSDPath" -> _)
 
   override def read(): DataFrame = {
     val reader = spark.read.format("xml").options(readOptions)
@@ -24,19 +24,18 @@ case class XmlFileDataFrameSource(spark: SparkSession, path: String, options: Ma
   }
 
   // XSDToSchema returns the row element wrapped as a single struct field (e.g. the rowTag element);
-  // spark-xml expects the schema of one row's *contents*, so unwrap that single struct.
+  // the XML datasource expects the schema of one row's *contents*, so unwrap that single struct.
   private def rowSchemaFromXsd(xsd: String): StructType =
-    XSDToSchema.read(Paths.get(xsd)) match {
+    XsdSchema.read(xsd) match {
       case StructType(Array(StructField(_, inner: StructType, _, _))) => inner
       case other => other
     }
 
   override def write(df: DataFrame): Boolean = {
-    // spark-xml validates against an XSD on read only, so drop the xsd option when writing
     df.write
       .mode(SaveMode.Overwrite)
       .format("xml")
-      .options(options - "xsd")
+      .options(taggedOptions)
       .save(path)
     true
   }
