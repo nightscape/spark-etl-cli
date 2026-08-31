@@ -57,7 +57,7 @@ jobs:
           java-version: ${{ steps.jdk.outputs.version }}
 
       - name: Setup Java (temurin@${{ steps.jdk.outputs.version }})
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: jdkfile
           java-version: ${{ steps.jdk.outputs.version }}
@@ -115,7 +115,7 @@ jobs:
 
       - name: Setup Java (temurin@11)
         if: matrix.java == 'temurin@11'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: jdkfile
           java-version: 11
