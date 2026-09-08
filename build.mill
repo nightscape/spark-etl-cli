@@ -75,7 +75,7 @@ object core extends Cross[DfioModule](crossMatrix)
 trait SerdeModule extends DfioModule with ConfluentRepo {
   def moduleDeps = Seq(core())
   def ivyDeps = Agg(
-    ivy"org.scala-lang.modules::scala-xml:2.4.0",
+    ivy"org.scala-lang.modules::scala-xml:2.5.0",
     ivy"com.fasterxml.jackson.module::jackson-module-scala:2.21.2",
     ivy"za.co.absa::abris:6.4.1"
   )
